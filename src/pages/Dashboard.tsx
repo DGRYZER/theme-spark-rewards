@@ -83,7 +83,7 @@ const Dashboard = () => {
         <div>
           <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
           <div className="grid grid-cols-4 gap-4">
-            <Link to="/catalog" className="flex flex-col items-center gap-3 group">
+            <Link to="/rewards" className="flex flex-col items-center gap-3 group">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <Gift className="h-8 w-8 text-white" />
               </div>
@@ -199,7 +199,7 @@ const Dashboard = () => {
               </div>
               Featured Rewards
             </h2>
-            <Link to="/catalog">
+            <Link to="/rewards">
               <Button variant="ghost" size="sm" className="font-semibold">See All</Button>
             </Link>
           </div>
