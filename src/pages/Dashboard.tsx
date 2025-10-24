@@ -2,6 +2,10 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Trophy, Gift, History, User, Star, TrendingUp, Sparkles, ClipboardList, QrCode, Shield, Users, HelpCircle, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import banner1 from "@/assets/banner-1.jpg";
+import banner2 from "@/assets/banner-2.jpg";
+import banner3 from "@/assets/banner-3.jpg";
 
 const Dashboard = () => {
   const userPoints = 2450;
@@ -190,57 +194,41 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Featured Rewards with premium look */}
+        {/* MyK Laticrete Banner Carousel */}
         <div>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-2xl font-bold flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-primary/10">
-                <Gift className="h-6 w-6 text-primary" />
-              </div>
-              Featured Rewards
-            </h2>
-            <Link to="/rewards">
-              <Button variant="ghost" size="sm" className="font-semibold">See All</Button>
-            </Link>
-          </div>
-          
-          <div className="grid sm:grid-cols-2 gap-6">
-            <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer">
-              <div className="aspect-video bg-primary/5 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <Gift className="h-16 w-16 text-primary group-hover:scale-110 transition-transform duration-300 relative z-10" />
-              </div>
-              <div className="p-6">
-                <h3 className="font-bold text-xl mb-2">$25 Gift Card</h3>
-                <p className="text-sm text-muted-foreground mb-4">Popular choice</p>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Points</p>
-                    <span className="font-bold text-2xl text-primary">2,000</span>
-                  </div>
-                  <Button size="lg" className="shadow-md">Redeem</Button>
+          <Carousel className="w-full" opts={{ loop: true }}>
+            <CarouselContent>
+              <CarouselItem>
+                <div className="relative aspect-[3/1] w-full overflow-hidden rounded-2xl shadow-xl">
+                  <img 
+                    src={banner1} 
+                    alt="MyK Laticrete Adhesive Application" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              </div>
-            </Card>
-
-            <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer">
-              <div className="aspect-video bg-secondary/10 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <Trophy className="h-16 w-16 text-secondary group-hover:scale-110 transition-transform duration-300 relative z-10" />
-              </div>
-              <div className="p-6">
-                <h3 className="font-bold text-xl mb-2">Premium Membership</h3>
-                <p className="text-sm text-muted-foreground mb-4">3 months access</p>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Points</p>
-                    <span className="font-bold text-2xl text-primary">5,000</span>
-                  </div>
-                  <Button size="lg" className="shadow-md">Redeem</Button>
+              </CarouselItem>
+              <CarouselItem>
+                <div className="relative aspect-[3/1] w-full overflow-hidden rounded-2xl shadow-xl">
+                  <img 
+                    src={banner2} 
+                    alt="MyK Laticrete Waterproofing Solutions" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              </div>
-            </Card>
-          </div>
+              </CarouselItem>
+              <CarouselItem>
+                <div className="relative aspect-[3/1] w-full overflow-hidden rounded-2xl shadow-xl">
+                  <img 
+                    src={banner3} 
+                    alt="MyK Laticrete Floor Leveling Products" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </CarouselItem>
+            </CarouselContent>
+            <CarouselPrevious className="left-4" />
+            <CarouselNext className="right-4" />
+          </Carousel>
         </div>
       </div>
     </div>
