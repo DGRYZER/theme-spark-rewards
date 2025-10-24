@@ -97,26 +97,26 @@ const Dashboard = () => {
               <span className="text-xs font-medium text-center">History</span>
             </Link>
 
-            <button className="flex flex-col items-center gap-3 group">
+            <Link to="/survey" className="flex flex-col items-center gap-3 group">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-700 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <ClipboardList className="h-8 w-8 text-white" />
               </div>
               <span className="text-xs font-medium text-center">Survey</span>
-            </button>
+            </Link>
 
-            <button className="flex flex-col items-center gap-3 group">
+            <Link to="/scan-qr" className="flex flex-col items-center gap-3 group">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <QrCode className="h-8 w-8 text-white" />
               </div>
               <span className="text-xs font-medium text-center">Scan QR</span>
-            </button>
+            </Link>
 
-            <button className="flex flex-col items-center gap-3 group">
+            <Link to="/coverage-calculator" className="flex flex-col items-center gap-3 group">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <Shield className="h-8 w-8 text-white" />
               </div>
               <span className="text-xs font-medium text-center">Coverage</span>
-            </button>
+            </Link>
 
             <button className="flex flex-col items-center gap-3 group">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">

@@ -9,6 +9,9 @@ import RewardDetail from "./pages/RewardDetail";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
 import Transactions from "./pages/Transactions";
+import ScanQR from "./pages/ScanQR";
+import Survey from "./pages/Survey";
+import CoverageCalculator from "./pages/CoverageCalculator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +29,9 @@ const App = () => (
           <Route path="/history" element={<History />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route path="/scan-qr" element={<ScanQR />} />
+          <Route path="/survey" element={<Survey />} />
+          <Route path="/coverage-calculator" element={<CoverageCalculator />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
