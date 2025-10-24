@@ -122,12 +122,12 @@ const Dashboard = () => {
               <span className="text-xs font-medium text-center">Coverage</span>
             </Link>
 
-            <button className="flex flex-col items-center gap-3 group">
+            <Link to="/refer-friend" className="flex flex-col items-center gap-3 group">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <Users className="h-8 w-8 text-white" />
               </div>
               <span className="text-xs font-medium text-center">Refer Friend</span>
-            </button>
+            </Link>
 
             <button className="flex flex-col items-center gap-3 group">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">

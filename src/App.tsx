@@ -13,6 +13,7 @@ import Transactions from "./pages/Transactions";
 import ScanQR from "./pages/ScanQR";
 import Survey from "./pages/Survey";
 import CoverageCalculator from "./pages/CoverageCalculator";
+import ReferFriend from "./pages/ReferFriend";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/scan-qr" element={<ScanQR />} />
           <Route path="/survey" element={<Survey />} />
           <Route path="/coverage-calculator" element={<CoverageCalculator />} />
+          <Route path="/refer-friend" element={<ReferFriend />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
