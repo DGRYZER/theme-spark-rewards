@@ -2,47 +2,56 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, QrCode, CheckCircle, Camera } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Package, CheckCircle, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ScanQR = () => {
-  const [isScanning, setIsScanning] = useState(false);
-  const [scannedProduct, setScannedProduct] = useState<string | null>(null);
+  const [volume, setVolume] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedVolume, setSubmittedVolume] = useState<number | null>(null);
   const [pointsEarned, setPointsEarned] = useState(0);
   const { toast } = useToast();
 
-  const recentScans = [
-    { id: 1, product: "LATICRETE Adhesive Pro", points: 150, date: "2 days ago" },
-    { id: 2, product: "LATICRETE Grout Maximizer", points: 100, date: "1 week ago" },
-    { id: 3, product: "LATICRETE Waterproofing", points: 200, date: "2 weeks ago" },
+  const recentEntries = [
+    { id: 1, volume: 5.2, points: 520, date: "2 days ago" },
+    { id: 2, volume: 3.8, points: 380, date: "1 week ago" },
+    { id: 3, volume: 7.5, points: 750, date: "2 weeks ago" },
   ];
 
-  const handleScan = () => {
-    setIsScanning(true);
+  const handleSubmit = () => {
+    const volumeNum = parseFloat(volume);
     
-    // Simulate QR scan
+    if (!volume || volumeNum <= 0) {
+      toast({
+        title: "Invalid Volume",
+        description: "Please enter a valid TMT bar volume",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    // Simulate submission - 100 points per tonne
     setTimeout(() => {
-      const products = [
-        { name: "LATICRETE TileFlex Plus", points: 150 },
-        { name: "LATICRETE SpectraLOCK Pro", points: 200 },
-        { name: "LATICRETE NXT Level Plus", points: 175 },
-      ];
-      const randomProduct = products[Math.floor(Math.random() * products.length)];
+      const points = Math.round(volumeNum * 100);
       
-      setScannedProduct(randomProduct.name);
-      setPointsEarned(randomProduct.points);
-      setIsScanning(false);
+      setSubmittedVolume(volumeNum);
+      setPointsEarned(points);
+      setIsSubmitting(false);
       
       toast({
-        title: "QR Code Scanned!",
-        description: `You earned ${randomProduct.points} points for ${randomProduct.name}`,
+        title: "Volume Submitted!",
+        description: `You earned ${points} points for ${volumeNum} tonnes of TMT bars`,
       });
-    }, 2000);
+    }, 1500);
   };
 
-  const resetScan = () => {
-    setScannedProduct(null);
+  const resetForm = () => {
+    setSubmittedVolume(null);
     setPointsEarned(0);
+    setVolume("");
   };
 
   return (
@@ -64,50 +73,69 @@ const ScanQR = () => {
           
           <div className="flex items-center gap-4 mb-3">
             <div className="p-3 rounded-2xl bg-primary-foreground/10 backdrop-blur-sm">
-              <QrCode className="h-10 w-10" />
+              <Package className="h-10 w-10" />
             </div>
-            <h1 className="text-4xl font-bold">Scan QR Code</h1>
+            <h1 className="text-4xl font-bold">Enter TMT Bar Volume</h1>
           </div>
-          <p className="text-primary-foreground/90 text-lg">Scan product QR codes to earn points</p>
+          <p className="text-primary-foreground/90 text-lg">Enter your TMT bar purchase volume to earn points</p>
         </div>
       </div>
 
       {/* Content */}
       <div className="mx-auto max-w-6xl px-4 py-8 space-y-8">
-        {/* Scanner Card */}
+        {/* Volume Entry Card */}
         <Card className="p-8">
-          {!scannedProduct ? (
-            <div className="text-center space-y-6">
-              <div className="mx-auto w-64 h-64 rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center relative overflow-hidden">
-                {isScanning ? (
-                  <div className="animate-pulse">
-                    <Camera className="h-24 w-24 text-primary" />
-                    <div className="absolute inset-0 border-4 border-primary rounded-3xl animate-ping" />
-                  </div>
-                ) : (
-                  <QrCode className="h-24 w-24 text-primary" />
-                )}
+          {!submittedVolume ? (
+            <div className="space-y-6 max-w-md mx-auto">
+              <div className="text-center space-y-4">
+                <div className="mx-auto w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                  <Package className="h-12 w-12 text-primary" />
+                </div>
+                
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">Enter Volume</h2>
+                  <p className="text-muted-foreground">
+                    Enter the volume of TMT bars purchased (in tonnes)
+                  </p>
+                </div>
               </div>
               
-              <div>
-                <h2 className="text-2xl font-bold mb-2">
-                  {isScanning ? "Scanning..." : "Ready to Scan"}
-                </h2>
-                <p className="text-muted-foreground">
-                  {isScanning 
-                    ? "Please hold steady while we scan your QR code" 
-                    : "Find the QR code inside your LATICRETE product packaging"}
-                </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Volume (Tonnes)
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    placeholder="e.g., 5.5"
+                    value={volume}
+                    onChange={(e) => setVolume(e.target.value)}
+                    className="text-lg h-14"
+                    disabled={isSubmitting}
+                  />
+                </div>
+                
+                <div className="p-4 bg-muted/50 rounded-xl">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Points to earn:</span>
+                    <span className="font-bold text-primary text-lg">
+                      {volume && parseFloat(volume) > 0 ? Math.round(parseFloat(volume) * 100) : 0} points
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">100 points per tonne</p>
+                </div>
               </div>
               
               <Button 
                 size="lg" 
-                onClick={handleScan}
-                disabled={isScanning}
-                className="px-8 py-6 text-lg"
+                onClick={handleSubmit}
+                disabled={isSubmitting || !volume || parseFloat(volume) <= 0}
+                className="w-full py-6 text-lg"
               >
-                <Camera className="h-5 w-5 mr-2" />
-                {isScanning ? "Scanning..." : "Start Scanning"}
+                <TrendingUp className="h-5 w-5 mr-2" />
+                {isSubmitting ? "Processing..." : "Submit Volume"}
               </Button>
             </div>
           ) : (
@@ -120,41 +148,41 @@ const ScanQR = () => {
                 <h2 className="text-3xl font-bold mb-2 text-primary">
                   +{pointsEarned} Points!
                 </h2>
-                <p className="text-xl font-semibold mb-1">{scannedProduct}</p>
+                <p className="text-xl font-semibold mb-1">{submittedVolume} tonnes</p>
                 <p className="text-muted-foreground">Points added to your account</p>
               </div>
               
               <Button 
                 size="lg" 
-                onClick={resetScan}
+                onClick={resetForm}
                 className="px-8 py-6 text-lg"
               >
-                <QrCode className="h-5 w-5 mr-2" />
-                Scan Another Product
+                <Package className="h-5 w-5 mr-2" />
+                Enter Another Volume
               </Button>
             </div>
           )}
         </Card>
 
-        {/* Recent Scans */}
+        {/* Recent Entries */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">Recent Scans</h2>
+          <h2 className="text-2xl font-bold mb-4">Recent Entries</h2>
           <div className="space-y-3">
-            {recentScans.map((scan) => (
-              <Card key={scan.id} className="p-5 hover:shadow-lg transition-all duration-300">
+            {recentEntries.map((entry) => (
+              <Card key={entry.id} className="p-5 hover:shadow-lg transition-all duration-300">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="p-3 rounded-xl bg-primary/10 text-primary">
-                      <QrCode className="h-5 w-5" />
+                      <Package className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-semibold text-base">{scan.product}</p>
-                      <p className="text-sm text-muted-foreground">{scan.date}</p>
+                      <p className="font-semibold text-base">{entry.volume} tonnes TMT Bars</p>
+                      <p className="text-sm text-muted-foreground">{entry.date}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="font-bold text-xl text-primary">
-                      +{scan.points}
+                      +{entry.points}
                     </span>
                     <p className="text-xs text-muted-foreground">points</p>
                   </div>
@@ -166,23 +194,23 @@ const ScanQR = () => {
 
         {/* Instructions */}
         <Card className="p-6 bg-muted/30">
-          <h3 className="font-bold text-lg mb-3">How to Scan</h3>
+          <h3 className="font-bold text-lg mb-3">How It Works</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li className="flex items-start gap-2">
               <span className="font-bold text-primary mt-0.5">1.</span>
-              <span>Look for the QR code sticker inside your LATICRETE product packaging</span>
+              <span>Enter the volume of ARS Steels TMT bars you purchased (in tonnes)</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="font-bold text-primary mt-0.5">2.</span>
-              <span>Click "Start Scanning" and point your camera at the QR code</span>
+              <span>You'll earn 100 points per tonne of TMT bars</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="font-bold text-primary mt-0.5">3.</span>
-              <span>Wait for the scan to complete and earn your points instantly</span>
+              <span>Your points will be added to your account instantly</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="font-bold text-primary mt-0.5">4.</span>
-              <span>Each product can only be scanned once</span>
+              <span>Redeem your points for exciting rewards and benefits</span>
             </li>
           </ul>
         </Card>
