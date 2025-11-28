@@ -112,7 +112,7 @@ const Dashboard = () => {
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <QrCode className="h-8 w-8 text-white" />
               </div>
-              <span className="text-xs font-medium text-center">Scan QR</span>
+              <span className="text-xs font-medium text-center">Add Volume</span>
             </Link>
 
             <Link to="/coverage-calculator" className="flex flex-col items-center gap-3 group">
@@ -194,7 +194,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* MyK Laticrete Banner Carousel */}
+        {/* ARS Steels Banner Carousel */}
         <div>
           <Carousel className="w-full" opts={{ loop: true }}>
             <CarouselContent>
@@ -202,7 +202,7 @@ const Dashboard = () => {
                 <div className="relative aspect-[3/1] w-full overflow-hidden rounded-2xl shadow-xl">
                   <img 
                     src={banner1} 
-                    alt="MyK Laticrete Adhesive Application" 
+                    alt="ARS Steels TMT Bar Manufacturing" 
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -211,7 +211,7 @@ const Dashboard = () => {
                 <div className="relative aspect-[3/1] w-full overflow-hidden rounded-2xl shadow-xl">
                   <img 
                     src={banner2} 
-                    alt="MyK Laticrete Waterproofing Solutions" 
+                    alt="ARS Steels Quality Products" 
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -220,7 +220,7 @@ const Dashboard = () => {
                 <div className="relative aspect-[3/1] w-full overflow-hidden rounded-2xl shadow-xl">
                   <img 
                     src={banner3} 
-                    alt="MyK Laticrete Floor Leveling Products" 
+                    alt="ARS Steels Construction Solutions" 
                     className="w-full h-full object-cover"
                   />
                 </div>
