@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Trophy, Gift, History, User, Star, TrendingUp, Sparkles, ClipboardList, QrCode, Shield, Users, HelpCircle, ShoppingBag } from "lucide-react";
@@ -7,8 +9,19 @@ import banner1 from "@/assets/banner-1.jpg";
 import banner2 from "@/assets/banner-2.jpg";
 import banner3 from "@/assets/banner-3.jpg";
 
+interface AccountRecord {
+  Id: string;
+  Name: string;
+  Total_Reward_Points__c: number;
+}
+
 const Dashboard = () => {
-  const userPoints = 2450;
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [accountData, setAccountData] = useState<AccountRecord | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Static user data for demonstration (you might want to fetch these from Salesforce too)
   const userTier = "Gold";
   const pointsToNext = 550;
 
@@ -17,6 +30,105 @@ const Dashboard = () => {
     { id: 2, type: "redeemed", amount: -500, description: "$10 Gift Card", date: "2 days ago" },
     { id: 3, type: "earned", amount: 200, description: "Referral bonus", date: "5 days ago" },
   ];
+
+  // Step 1: Get Access Token
+  const getAccessToken = async () => {
+    const salesforceUrl =
+      "https://arssteelgroup-dev-ed.develop.my.salesforce.com/services/oauth2/token";
+    const clientId =
+      "3MVG9XDDwp5wgbs0GBXn.nVBDZ.vhpls3uA9Kt.F0F5kdFtHSseF._pbUChPd76LvA0AdGGrLu7SfDmwhvCYl";
+    const clientSecret =
+      "D63B980DDDE3C45170D6F9AE12215FCB6A7490F97E383E579BE8DEE427A0D891";
+
+    const params = new URLSearchParams();
+    params.append("grant_type", "client_credentials");
+    params.append("client_id", clientId);
+    params.append("client_secret", clientSecret);
+
+    try {
+      const response = await axios.post(salesforceUrl, params, {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      });
+      setAccessToken(response.data.access_token);
+    } catch (err: unknown) {
+      console.error("❌ Error fetching access token:", err);
+      setError("Failed to authenticate with Salesforce");
+      setLoading(false);
+    }
+  };
+
+  // Fetch account data from Salesforce
+  const fetchAccountData = async (token: string) => {
+    try {
+      const query = `SELECT Id, Name, Total_Reward_Points__c FROM Account WHERE Id = '001fo00000C5gZDAAZ'`;
+      const queryUrl = `https://arssteelgroup-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=${query.replace(
+        /\s+/g,
+        "+"
+      )}`;
+
+      const response = await axios.get(queryUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const records: AccountRecord[] = response.data.records;
+
+      if (records.length > 0) {
+        setAccountData(records[0]);
+      } else {
+        setError("No account data found");
+      }
+    } catch (err: unknown) {
+      console.error("❌ Error fetching account data:", err);
+      setError("Failed to fetch account data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAccessToken();
+  }, []);
+
+  useEffect(() => {
+    if (!accessToken) return;
+
+    fetchAccountData(accessToken);
+  }, [accessToken]);
+
+  // Display loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading account data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Display error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
+            <p className="font-semibold">Error loading data</p>
+            <p className="text-sm mt-2">{error}</p>
+          </div>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="mt-4"
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -31,7 +143,9 @@ const Dashboard = () => {
         <div className="mx-auto max-w-6xl relative z-10">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Welcome back! 👋</h1>
+              <h1 className="text-3xl font-bold mb-2">
+                Welcome back{accountData?.Name ? `, ${accountData.Name.split(' ')[0]}` : ''}! 👋
+              </h1>
               <p className="text-primary-foreground/90 text-lg">Ready to earn more rewards?</p>
             </div>
             <Link to="/profile">
@@ -50,7 +164,9 @@ const Dashboard = () => {
             <div className="flex items-start justify-between mb-6">
               <div>
                 <p className="text-sm text-muted-foreground mb-2 font-medium uppercase tracking-wide">Your Balance</p>
-                <h2 className="text-5xl font-bold text-primary mb-1 group-hover:scale-105 transition-transform">{userPoints.toLocaleString()}</h2>
+                <h2 className="text-5xl font-bold text-primary mb-1 group-hover:scale-105 transition-transform">
+                  {accountData?.Total_Reward_Points__c?.toLocaleString() || '0'}
+                </h2>
                 <p className="text-muted-foreground">Reward Points</p>
               </div>
               <div className="flex items-center gap-2 px-5 py-3 rounded-full bg-secondary shadow-md">
@@ -71,7 +187,11 @@ const Dashboard = () => {
               <div className="h-3 bg-muted rounded-full overflow-hidden shadow-inner">
                 <div 
                   className="h-full bg-primary rounded-full transition-all duration-500 relative overflow-hidden"
-                  style={{ width: `${(userPoints / (userPoints + pointsToNext)) * 100}%` }}
+                  style={{ 
+                    width: accountData?.Total_Reward_Points__c 
+                      ? `${(accountData.Total_Reward_Points__c / (accountData.Total_Reward_Points__c + pointsToNext)) * 100}%` 
+                      : '0%' 
+                  }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
                 </div>
@@ -98,21 +218,21 @@ const Dashboard = () => {
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <History className="h-8 w-8 text-white" />
               </div>
-              <span className="text-xs font-medium text-center">History</span>
+              <span className="text-xs font-medium text-center">Activity History</span>
             </Link>
 
             <Link to="/survey" className="flex flex-col items-center gap-3 group">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-700 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <ClipboardList className="h-8 w-8 text-white" />
               </div>
-              <span className="text-xs font-medium text-center">Survey</span>
+              <span className="text-xs font-medium text-center">Convertion Request</span>
             </Link>
 
             <Link to="/scan-qr" className="flex flex-col items-center gap-3 group">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <QrCode className="h-8 w-8 text-white" />
               </div>
-              <span className="text-xs font-medium text-center">Add Volume</span>
+              <span className="text-xs font-medium text-center">Create Order</span>
             </Link>
 
             <Link to="/coverage-calculator" className="flex flex-col items-center gap-3 group">
