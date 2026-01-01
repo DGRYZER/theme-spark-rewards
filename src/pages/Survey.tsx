@@ -40,6 +40,30 @@ interface LookupData {
   message: string;
 }
 
+// Dummy data
+const DUMMY_ORDERS: OrderOption[] = [
+  { id: "order-001", orderNumber: "ORD-2024-001", accountName: "ABC Manufacturing", totalAmount: 12500.75, status: "Pending" },
+  { id: "order-002", orderNumber: "ORD-2024-002", accountName: "XYZ Corp", totalAmount: 8500.50, status: "Processing" },
+  { id: "order-003", orderNumber: "ORD-2024-003", accountName: "Global Industries", totalAmount: 22500.25, status: "Shipped" },
+  { id: "order-004", orderNumber: "ORD-2024-004", accountName: "Tech Solutions Inc", totalAmount: 18000.00, status: "Delivered" },
+  { id: "order-005", orderNumber: "ORD-2024-005", accountName: "BuildRight Construction", totalAmount: 32000.99, status: "Pending" },
+];
+
+const DUMMY_DEALERS: DealerOption[] = [
+  { id: "dealer-001", name: "Steel Distributors Inc", city: "Chicago", state: "IL", type: "Wholesale" },
+  { id: "dealer-002", name: "Metalworks Supply Co", city: "Houston", state: "TX", type: "Retail" },
+  { id: "dealer-003", name: "Industrial Metals LLC", city: "Detroit", state: "MI", type: "Wholesale" },
+  { id: "dealer-004", name: "Precision Steelworks", city: "Los Angeles", state: "CA", type: "Manufacturer" },
+  { id: "dealer-005", name: "Alloy Specialists", city: "Pittsburgh", state: "PA", type: "Distributor" },
+];
+
+const DUMMY_STATUS_VALUES: PicklistValue[] = [
+  { label: "Pending", value: "Pending", isDefault: true },
+  { label: "In Progress", value: "In Progress", isDefault: false },
+  { label: "Completed", value: "Completed", isDefault: false },
+  { label: "Cancelled", value: "Cancelled", isDefault: false },
+];
+
 const ConversionRequestForm = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,9 +79,7 @@ const ConversionRequestForm = () => {
     orderId: "",
     dealerId: ""
   });
-  const [accessToken, setAccessToken] = useState<string>("");
   const [debugInfo, setDebugInfo] = useState<string>("");
-  const [apiEndpoint, setApiEndpoint] = useState<string>("");
   const [submissionResult, setSubmissionResult] = useState<{
     recordId: string;
     requestNumber: string;
@@ -65,120 +87,43 @@ const ConversionRequestForm = () => {
   } | null>(null);
   
   const { toast } = useToast();
-  const INFLUENCER_ID = '001fo00000C5gZDAAZ';
 
-  // Get access token
-  const getAccessToken = async () => {
-    setDebugInfo(prev => prev + "\n\nStarting authentication...");
-    const salesforceUrl = "https://arssteelgroup-dev-ed.develop.my.salesforce.com/services/oauth2/token";
-    const clientId = "3MVG9XDDwp5wgbs0GBXn.nVBDZ.vhpls3uA9Kt.F0F5kdFtHSseF._pbUChPd76LvA0AdGGrLu7SfDmwhvCYl";
-    const clientSecret = "D63B980DDDE3C45170D6F9AE12215FCB6A7490F97E383E579BE8DEE427A0D891";
-
-    const params = new URLSearchParams();
-    params.append("grant_type", "client_credentials");
-    params.append("client_id", clientId);
-    params.append("client_secret", clientSecret);
-
-    try {
-      setDebugInfo(prev => prev + "\nSending OAuth request...");
-      const response = await fetch(salesforceUrl, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/x-www-form-urlencoded' 
-        },
-        body: params
-      });
-      
-      const data = await response.json();
-      
-      if (data.access_token) {
-        setAccessToken(data.access_token);
-        setDebugInfo(prev => prev + "\n✓ Authentication successful");
-        return data.access_token;
-      } else {
-        setDebugInfo(prev => prev + `\n✗ Authentication failed: ${JSON.stringify(data)}`);
-        toast({
-          title: "Authentication Error",
-          description: "Failed to get access token from Salesforce",
-          variant: "destructive",
-        });
-        return null;
-      }
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      setDebugInfo(prev => prev + `\n✗ Authentication error: ${errorMsg}`);
-      toast({
-        title: "Authentication Error",
-        description: "Failed to authenticate with Salesforce",
-        variant: "destructive",
-      });
-      return null;
-    }
-  };
-
-  // Fetch lookup data
-  const fetchLookupData = async (token: string, retryCount = 0) => {
+  // Fetch dummy lookup data
+  const fetchLookupData = async (retryCount = 0) => {
     setIsLoading(true);
-    setDebugInfo(prev => prev + `\n\nFetching lookup data (attempt ${retryCount + 1})...`);
+    setDebugInfo(prev => prev + `\n\nFetching dummy data (attempt ${retryCount + 1})...`);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
     
     try {
-      const endpoint = 'https://arssteelgroup-dev-ed.develop.my.salesforce.com/services/apexrest/api/conversion-request';
-      setApiEndpoint(endpoint);
+      // Simulate random failures for testing
+      if (Math.random() < 0.1 && retryCount < 2) { // 10% chance of failure
+        throw new Error("Simulated network error");
+      }
       
-      const response = await fetch(endpoint, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      setLookupData({
+        orders: DUMMY_ORDERS,
+        dealers: DUMMY_DEALERS,
+        statusValues: DUMMY_STATUS_VALUES,
+        success: true,
+        message: `Loaded ${DUMMY_ORDERS.length} orders and ${DUMMY_DEALERS.length} dealers from dummy data`
       });
       
-      setDebugInfo(prev => prev + `\nAPI Response Status: ${response.status}`);
+      setDebugInfo(prev => prev + `\n✓ Dummy data loaded: ${DUMMY_ORDERS.length} orders, ${DUMMY_DEALERS.length} dealers`);
       
-      const text = await response.text();
-      setDebugInfo(prev => prev + `\nAPI Response Body: ${text.substring(0, 500)}...`);
-      
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (parseError) {
-        setDebugInfo(prev => prev + `\n✗ JSON Parse Error: ${parseError}`);
-        if (retryCount < 2) {
-          setTimeout(() => fetchLookupData(token, retryCount + 1), 1000);
-          return;
-        }
-        throw new Error('Invalid JSON response from server');
-      }
-      
-      if (data.success) {
-        setLookupData({
-          orders: data.orders || [],
-          dealers: data.dealers || [],
-          statusValues: data.statusValues || [],
-          success: true,
-          message: data.message || `Loaded ${data.orders?.length || 0} orders and ${data.dealers?.length || 0} dealers`
-        });
-        setDebugInfo(prev => prev + `\n✓ Data loaded: ${data.orders?.length || 0} orders, ${data.dealers?.length || 0} dealers, ${data.statusValues?.length || 0} status values`);
-      } else {
-        setDebugInfo(prev => prev + `\n✗ API Error: ${data.message || 'Unknown error'}`);
-        toast({
-          title: "Data Fetch Error",
-          description: data.message || "Failed to fetch data from Salesforce",
-          variant: "destructive",
-        });
-      }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       setDebugInfo(prev => prev + `\n✗ Fetch Error: ${errorMsg}`);
       
       if (retryCount < 2) {
-        setTimeout(() => fetchLookupData(token, retryCount + 1), 1000);
+        setTimeout(() => fetchLookupData(retryCount + 1), 1000);
         return;
       }
       
       toast({
-        title: "Network Error",
-        description: "Failed to connect to Salesforce API",
+        title: "Data Load Error",
+        description: "Failed to load dummy data",
         variant: "destructive",
       });
     } finally {
@@ -202,51 +147,46 @@ const ConversionRequestForm = () => {
     setIsSubmitting(true);
     setDebugInfo(prev => prev + `\n\nSubmitting form...\nOrder: ${formData.orderId}\nDealer: ${formData.dealerId}`);
     
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
     try {
-      const token = accessToken || await getAccessToken();
-      if (!token) {
-        throw new Error("Failed to get access token");
+      // Simulate random submission failure
+      if (Math.random() < 0.05) { // 5% chance of failure
+        throw new Error("Simulated submission error");
       }
-
-      const requestBody = {
-        orderId: formData.orderId,
-        dealerId: formData.dealerId
+      
+      // Find selected order and dealer
+      const selectedOrder = DUMMY_ORDERS.find(order => order.id === formData.orderId);
+      const selectedDealer = DUMMY_DEALERS.find(dealer => dealer.id === formData.dealerId);
+      
+      // Generate dummy response
+      const dummyResponse = {
+        success: true,
+        recordId: `rec-${Date.now()}`,
+        requestNumber: `CR-${Math.floor(1000 + Math.random() * 9000)}`,
+        statusValue: "Pending",
+        message: `Conversion request created for Order ${selectedOrder?.orderNumber} and Dealer ${selectedDealer?.name}`
       };
-
-      const response = await fetch(
-        'https://arssteelgroup-dev-ed.develop.my.salesforce.com/services/apexrest/api/conversion-request',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(requestBody)
-        }
-      );
       
-      const result = await response.json();
-      setDebugInfo(prev => prev + `\nSubmission Response: ${JSON.stringify(result)}`);
+      setDebugInfo(prev => prev + `\nSubmission Response: ${JSON.stringify(dummyResponse)}`);
       
-      if (result.success) {
-        setSubmissionResult({
-          recordId: result.recordId,
-          requestNumber: result.requestNumber,
-          statusValue: result.statusValue || 'Pending'
-        });
-        setIsSubmitted(true);
-        
-        toast({
-          title: "Success!",
-          description: `Conversion Request ${result.requestNumber} created successfully`,
-          variant: "default",
-        });
-        
-        // Reset form
-        setFormData({ orderId: "", dealerId: "" });
-      } else {
-        throw new Error(result.message || "Failed to create conversion request");
-      }
+      setSubmissionResult({
+        recordId: dummyResponse.recordId,
+        requestNumber: dummyResponse.requestNumber,
+        statusValue: dummyResponse.statusValue
+      });
+      setIsSubmitted(true);
+      
+      toast({
+        title: "Success!",
+        description: `Conversion Request ${dummyResponse.requestNumber} created successfully`,
+        variant: "default",
+      });
+      
+      // Reset form
+      setFormData({ orderId: "", dealerId: "" });
+      
     } catch (error) {
       console.error("Submission error:", error);
       toast({
@@ -261,22 +201,13 @@ const ConversionRequestForm = () => {
 
   // Refresh data
   const handleRefresh = async () => {
-    const token = accessToken || await getAccessToken();
-    if (token) {
-      await fetchLookupData(token);
-    }
+    await fetchLookupData();
   };
 
   // Initialize
   useEffect(() => {
-    const initialize = async () => {
-      setDebugInfo("Initializing...");
-      const token = await getAccessToken();
-      if (token) {
-        await fetchLookupData(token);
-      }
-    };
-    initialize();
+    setDebugInfo("Initializing with dummy data...");
+    fetchLookupData();
   }, []);
 
   if (isSubmitted && submissionResult) {
@@ -304,7 +235,7 @@ const ConversionRequestForm = () => {
               <div>
                 <h2 className="text-3xl font-bold mb-2">Request Submitted!</h2>
                 <p className="text-lg text-muted-foreground mb-6">
-                  Your conversion request has been successfully created in Salesforce
+                  Your conversion request has been successfully created (Dummy Data)
                 </p>
                 
                 <div className="space-y-4 max-w-md mx-auto">
@@ -383,7 +314,7 @@ return (
               Create Conversion Request
             </h1>
             <p className="text-primary-foreground/90 text-base sm:text-lg mt-1 sm:mt-2">
-              Submit a new conversion request to Salesforce
+              Submit a new conversion request (Using Dummy Data)
             </p>
           </div>
           
@@ -406,6 +337,15 @@ return (
         {/* Main Form */}
         <div className="lg:col-span-2">
           <Card className="p-4 sm:p-6 md:p-8">
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center">
+                <Info className="h-5 w-5 text-blue-600 mr-2" />
+                <p className="text-sm text-blue-700">
+                  <strong>Demo Mode:</strong> Using dummy data. No Salesforce connection.
+                </p>
+              </div>
+            </div>
+            
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {/* Order Number Dropdown */}
               <div className="space-y-2">
@@ -443,7 +383,13 @@ return (
                               <span className="font-medium text-sm sm:text-base">
                                 Order #{order.orderNumber}
                               </span>
+                              <Badge variant="outline" className="ml-2 text-xs">
+                                ${order.totalAmount.toLocaleString()}
+                              </Badge>
                             </div>
+                            <span className="text-xs text-muted-foreground mt-1">
+                              {order.accountName} • {order.status}
+                            </span>
                           </div>
                         </SelectItem>
                       ))
@@ -490,11 +436,14 @@ return (
                         <SelectItem key={dealer.id} value={dealer.id}>
                           <div className="flex flex-col py-1">
                             <span className="font-medium text-sm sm:text-base">{dealer.name}</span>
-                            {dealer.type && (
-                              <Badge variant="secondary" className="text-xs mt-1 self-start">
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="secondary" className="text-xs">
                                 {dealer.type}
                               </Badge>
-                            )}
+                              <span className="text-xs text-muted-foreground">
+                                {dealer.city}, {dealer.state}
+                              </span>
+                            </div>
                           </div>
                         </SelectItem>
                       ))
@@ -529,7 +478,7 @@ return (
                   <p className="text-xs sm:text-sm text-muted-foreground mt-2 text-center">
                     {lookupData.orders.length === 0 ? 'No orders available. ' : ''}
                     {lookupData.dealers.length === 0 ? 'No dealers available. ' : ''}
-                    Please refresh or check Salesforce data.
+                    Please refresh or check data.
                   </p>
                 )}
               </div>
@@ -538,20 +487,36 @@ return (
 
           {/* Instructions */}
           <Card className="p-4 sm:p-6 mt-4 sm:mt-6 bg-muted/30">
-            <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3">How it works:</h3>
+            <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3">How it works (Demo Mode):</h3>
             <ol className="list-decimal pl-4 sm:pl-5 space-y-1 sm:space-y-2 text-xs sm:text-sm">
-              <li>Select an Order Number from the dropdown (fetched from Salesforce)</li>
-              <li>Select a Dealer Name from the dropdown (fetched from Salesforce)</li>
-              <li>Click "Submit Conversion Request" to create the record</li>
+              <li>Select an Order Number from the dropdown (dummy data)</li>
+              <li>Select a Dealer Name from the dropdown (dummy data)</li>
+              <li>Click "Submit Conversion Request" to create a dummy record</li>
               <li>The system will automatically set status to <strong>"Pending"</strong></li>
-              <li>A new Conversion_Request__c record will be created in Salesforce</li>
+              <li>A dummy record will be created (no actual Salesforce connection)</li>
             </ol>
           </Card>
         </div>
         
-        {/* Right Sidebar - Add this if you have content for it */}
+        {/* Debug Panel */}
         <div className="lg:col-span-1">
-          {/* Add any additional sidebar content here */}
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center mb-4">
+              <Database className="h-5 w-5 mr-2 text-blue-600" />
+              <h3 className="font-semibold">Debug Info</h3>
+            </div>
+            <div className="text-xs bg-muted p-3 rounded-lg overflow-auto max-h-64">
+              <pre className="whitespace-pre-wrap">
+                {debugInfo || "No debug information available"}
+              </pre>
+            </div>
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-xs text-amber-800">
+                <strong>Note:</strong> This is a demo version with dummy data. 
+                All submissions are simulated and no data is actually saved.
+              </p>
+            </div>
+          </Card>
         </div>
       </div>
     </div>
