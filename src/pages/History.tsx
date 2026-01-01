@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,17 +38,6 @@ interface ProductDetail {
   UnitPrice?: number;
 }
 
-interface OrderItem {
-  Id: string;
-  Product2Id: string;
-  Product2?: {
-    Name: string;
-    ProductCode?: string;
-  };
-  Quantity: number;
-  UnitPrice: number;
-}
-
 interface ConversionRequest {
   Id: string;
   Name: string;
@@ -73,123 +61,199 @@ interface ConversionRequest {
   productDetails?: ProductDetail[];
 }
 
+// Dummy data for demonstration
+const DUMMY_CONVERSION_REQUESTS: ConversionRequest[] = [
+  {
+    Id: "001",
+    Name: "CR-1001",
+    Order__c: "ORD-001",
+    Order__r: {
+      OrderNumber: "ORD-1001"
+    },
+    Points_Awarded__c: 1500,
+    Request_Status__c: "Approved",
+    Conversion_Date__c: "2024-01-15",
+    Dealer__c: "ACC-001",
+    Dealer__r: {
+      Name: "ABC Steel Distributors"
+    },
+    Influencer__c: "INF-001",
+    Influencer__r: {
+      Name: "John Smith"
+    },
+    CreatedDate: "2024-01-10T10:30:00Z",
+    LastModifiedDate: "2024-01-16T14:20:00Z",
+    productDetails: [
+      {
+        Id: "PD-001",
+        Name: "Structural Steel Beam",
+        ProductCode: "STL-BEAM-500",
+        Quantity: 10,
+        UnitPrice: 1250.50
+      },
+      {
+        Id: "PD-002",
+        Name: "Steel Reinforcement Bar",
+        ProductCode: "STL-RB-12MM",
+        Quantity: 50,
+        UnitPrice: 45.75
+      }
+    ]
+  },
+  {
+    Id: "002",
+    Name: "CR-1002",
+    Order__c: "ORD-002",
+    Order__r: {
+      OrderNumber: "ORD-1002"
+    },
+    Points_Awarded__c: 0,
+    Request_Status__c: "Pending",
+    Conversion_Date__c: "2024-01-20",
+    Dealer__c: "ACC-002",
+    Dealer__r: {
+      Name: "XYZ Metal Works"
+    },
+    Influencer__c: "INF-002",
+    Influencer__r: {
+      Name: "Sarah Johnson"
+    },
+    CreatedDate: "2024-01-18T09:15:00Z",
+    LastModifiedDate: "2024-01-18T09:15:00Z",
+    productDetails: [
+      {
+        Id: "PD-003",
+        Name: "Galvanized Steel Sheet",
+        ProductCode: "STL-SHEET-GALV",
+        Quantity: 25,
+        UnitPrice: 320.25
+      }
+    ]
+  },
+  {
+    Id: "003",
+    Name: "CR-1003",
+    Order__c: "ORD-003",
+    Order__r: {
+      OrderNumber: "ORD-1003"
+    },
+    Points_Awarded__c: 2500,
+    Request_Status__c: "Approved",
+    Conversion_Date__c: "2024-01-05",
+    Dealer__c: "ACC-003",
+    Dealer__r: {
+      Name: "Metal Masters Inc."
+    },
+    Influencer__c: "INF-003",
+    Influencer__r: {
+      Name: "Robert Chen"
+    },
+    CreatedDate: "2024-01-03T14:45:00Z",
+    LastModifiedDate: "2024-01-08T11:30:00Z",
+    productDetails: [
+      {
+        Id: "PD-004",
+        Name: "Stainless Steel Pipe",
+        ProductCode: "STL-PIPE-SS304",
+        Quantity: 15,
+        UnitPrice: 850.00
+      },
+      {
+        Id: "PD-005",
+        Name: "Steel Angle Iron",
+        ProductCode: "STL-ANGLE-50",
+        Quantity: 30,
+        UnitPrice: 65.40
+      },
+      {
+        Id: "PD-006",
+        Name: "Steel Plate",
+        ProductCode: "STL-PLATE-10MM",
+        Quantity: 8,
+        UnitPrice: 420.75
+      }
+    ]
+  },
+  {
+    Id: "004",
+    Name: "CR-1004",
+    Order__c: "ORD-004",
+    Order__r: {
+      OrderNumber: "ORD-1004"
+    },
+    Points_Awarded__c: 0,
+    Request_Status__c: "Rejected",
+    Conversion_Date__c: "2024-01-22",
+    Dealer__c: "ACC-001",
+    Dealer__r: {
+      Name: "ABC Steel Distributors"
+    },
+    Influencer__c: "INF-004",
+    Influencer__r: {
+      Name: "Michael Brown"
+    },
+    CreatedDate: "2024-01-21T16:20:00Z",
+    LastModifiedDate: "2024-01-23T10:15:00Z",
+    productDetails: [
+      {
+        Id: "PD-007",
+        Name: "Steel Wire Mesh",
+        ProductCode: "STL-MESH-6MM",
+        Quantity: 40,
+        UnitPrice: 28.90
+      }
+    ]
+  },
+  {
+    Id: "005",
+    Name: "CR-1005",
+    Order__c: "ORD-005",
+    Order__r: {
+      OrderNumber: "ORD-1005"
+    },
+    Points_Awarded__c: 1800,
+    Request_Status__c: "Approved",
+    Conversion_Date__c: "2023-12-28",
+    Dealer__c: "ACC-004",
+    Dealer__r: {
+      Name: "Steel Solutions Ltd."
+    },
+    Influencer__c: "INF-001",
+    Influencer__r: {
+      Name: "John Smith"
+    },
+    CreatedDate: "2023-12-26T11:10:00Z",
+    LastModifiedDate: "2023-12-30T09:45:00Z",
+    productDetails: [
+      {
+        Id: "PD-008",
+        Name: "Steel Channel",
+        ProductCode: "STL-CHANNEL-C6",
+        Quantity: 12,
+        UnitPrice: 780.30
+      }
+    ]
+  }
+];
+
 const History = () => {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [conversionRequests, setConversionRequests] = useState<ConversionRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<ConversionRequest | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Get Access Token
-  const getAccessToken = async () => {
-    const salesforceUrl =
-      "https://arssteelgroup-dev-ed.develop.my.salesforce.com/services/oauth2/token";
-    const clientId =
-      "3MVG9XDDwp5wgbs0GBXn.nVBDZ.vhpls3uA9Kt.F0F5kdFtHSseF._pbUChPd76LvA0AdGGrLu7SfDmwhvCYl";
-    const clientSecret =
-      "D63B980DDDE3C45170D6F9AE12215FCB6A7490F97E383E579BE8DEE427A0D891";
-
-    const params = new URLSearchParams();
-    params.append("grant_type", "client_credentials");
-    params.append("client_id", clientId);
-    params.append("client_secret", clientSecret);
-
-    try {
-      const response = await axios.post(salesforceUrl, params, {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-      setAccessToken(response.data.access_token);
-    } catch (err: unknown) {
-      console.error("❌ Error fetching access token:", err);
-      setError("Failed to authenticate with Salesforce");
-    }
-  };
-
-  // Fetch Order Items for a specific order
-  const fetchOrderItems = async (orderId: string): Promise<ProductDetail[]> => {
-    if (!accessToken) return [];
-
-    try {
-      const query = `SELECT Id, Product2Id, Product2.Name, Product2.ProductCode, Quantity, UnitPrice FROM OrderItem WHERE OrderId = '${orderId}'`;
-      const queryUrl = `https://arssteelgroup-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=${query.replace(/\s+/g, "+")}`;
-
-      const response = await axios.get(queryUrl, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const orderItems: OrderItem[] = response.data.records;
-      
-      return orderItems.map(item => ({
-        Id: item.Id,
-        Name: item.Product2?.Name || 'Unknown Product',
-        ProductCode: item.Product2?.ProductCode,
-        Quantity: item.Quantity,
-        UnitPrice: item.UnitPrice
-      }));
-    } catch (err) {
-      console.error("❌ Error fetching order items:", err);
-      return [];
-    }
-  };
-
-  // Fetch Conversion Requests
-  const fetchConversionRequests = async () => {
-    if (!accessToken) return;
-
+  // Load dummy data
+  const loadDummyData = async () => {
     try {
       setLoading(true);
-      // Query to get Conversion Requests with related Order and Account information
-      const query = `
-        SELECT 
-          Id, 
-          Name, 
-          Order__c, 
-          Order__r.OrderNumber,
-          Points_Awarded__c, 
-          Request_Status__c, 
-          Conversion_Date__c,
-          Dealer__c,
-          Dealer__r.Name,
-          Influencer__c,
-          Influencer__r.Name,
-          CreatedDate,
-          LastModifiedDate
-        FROM 
-          Conversion_Request__c 
-        ORDER BY 
-          CreatedDate DESC
-        LIMIT 50
-      `;
-
-      const queryUrl = `https://arssteelgroup-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=${query.replace(/\s+/g, "+")}`;
-
-      const response = await axios.get(queryUrl, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const records: ConversionRequest[] = response.data.records;
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Fetch product details for each conversion request
-      const recordsWithProducts = await Promise.all(
-        records.map(async (record) => {
-          if (record.Order__c) {
-            const productDetails = await fetchOrderItems(record.Order__c);
-            return { ...record, productDetails };
-          }
-          return record;
-        })
-      );
-
-      setConversionRequests(recordsWithProducts);
+      // Load dummy data
+      setConversionRequests(DUMMY_CONVERSION_REQUESTS);
     } catch (err: unknown) {
-      console.error("❌ Error fetching conversion requests:", err);
+      console.error("❌ Error loading data:", err);
       setError("Failed to load conversion requests");
     } finally {
       setLoading(false);
@@ -197,14 +261,8 @@ const History = () => {
   };
 
   useEffect(() => {
-    getAccessToken();
+    loadDummyData();
   }, []);
-
-  useEffect(() => {
-    if (accessToken) {
-      fetchConversionRequests();
-    }
-  }, [accessToken]);
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -342,7 +400,7 @@ const History = () => {
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">Error Loading Data</h2>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>
+            <Button onClick={() => loadDummyData()}>
               Retry
             </Button>
           </div>
