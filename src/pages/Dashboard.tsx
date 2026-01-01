@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Trophy, Gift, History, User, Star, TrendingUp, Sparkles, ClipboardList, QrCode, Shield, Users, HelpCircle, ShoppingBag } from "lucide-react";
@@ -16,12 +15,11 @@ interface AccountRecord {
 }
 
 const Dashboard = () => {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [accountData, setAccountData] = useState<AccountRecord | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Static user data for demonstration (you might want to fetch these from Salesforce too)
+  // Static user data for demonstration
   const userTier = "Gold";
   const pointsToNext = 550;
 
@@ -29,74 +27,40 @@ const Dashboard = () => {
     { id: 1, type: "earned", amount: 150, description: "Purchase reward", date: "Today" },
     { id: 2, type: "redeemed", amount: -500, description: "$10 Gift Card", date: "2 days ago" },
     { id: 3, type: "earned", amount: 200, description: "Referral bonus", date: "5 days ago" },
+    { id: 4, type: "earned", amount: 75, description: "Survey completion", date: "1 week ago" },
+    { id: 5, type: "redeemed", amount: -1000, description: "Product discount", date: "2 weeks ago" },
   ];
 
-  // Step 1: Get Access Token
-  const getAccessToken = async () => {
-    const salesforceUrl =
-      "https://arssteelgroup-dev-ed.develop.my.salesforce.com/services/oauth2/token";
-    const clientId =
-      "3MVG9XDDwp5wgbs0GBXn.nVBDZ.vhpls3uA9Kt.F0F5kdFtHSseF._pbUChPd76LvA0AdGGrLu7SfDmwhvCYl";
-    const clientSecret =
-      "D63B980DDDE3C45170D6F9AE12215FCB6A7490F97E383E579BE8DEE427A0D891";
-
-    const params = new URLSearchParams();
-    params.append("grant_type", "client_credentials");
-    params.append("client_id", clientId);
-    params.append("client_secret", clientSecret);
-
-    try {
-      const response = await axios.post(salesforceUrl, params, {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-      setAccessToken(response.data.access_token);
-    } catch (err: unknown) {
-      console.error("❌ Error fetching access token:", err);
-      setError("Failed to authenticate with Salesforce");
-      setLoading(false);
-    }
+  // Dummy account data
+  const dummyAccountData: AccountRecord = {
+    Id: "001fo00000C5gZDAAZ",
+    Name: "John Smith",
+    Total_Reward_Points__c: 2450
   };
 
-  // Fetch account data from Salesforce
-  const fetchAccountData = async (token: string) => {
+  // Fetch account data from dummy source
+  const fetchAccountData = async () => {
     try {
-      const query = `SELECT Id, Name, Total_Reward_Points__c FROM Account WHERE Id = '001fo00000C5gZDAAZ'`;
-      const queryUrl = `https://arssteelgroup-dev-ed.develop.my.salesforce.com/services/data/v62.0/query?q=${query.replace(
-        /\s+/g,
-        "+"
-      )}`;
-
-      const response = await axios.get(queryUrl, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const records: AccountRecord[] = response.data.records;
-
-      if (records.length > 0) {
-        setAccountData(records[0]);
-      } else {
-        setError("No account data found");
-      }
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Use dummy data
+      setAccountData(dummyAccountData);
+      
+      // Optional: Uncomment to simulate error
+      // throw new Error("Failed to fetch account data");
+      
     } catch (err: unknown) {
       console.error("❌ Error fetching account data:", err);
-      setError("Failed to fetch account data");
+      setError("Failed to fetch account data. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    getAccessToken();
+    fetchAccountData();
   }, []);
-
-  useEffect(() => {
-    if (!accessToken) return;
-
-    fetchAccountData(accessToken);
-  }, [accessToken]);
 
   // Display loading state
   if (loading) {
@@ -120,7 +84,11 @@ const Dashboard = () => {
             <p className="text-sm mt-2">{error}</p>
           </div>
           <Button 
-            onClick={() => window.location.reload()} 
+            onClick={() => {
+              setLoading(true);
+              setError(null);
+              fetchAccountData();
+            }} 
             className="mt-4"
           >
             Retry
